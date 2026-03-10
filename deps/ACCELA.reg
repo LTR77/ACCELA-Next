@@ -1,0 +1,28 @@
+Windows Registry Editor Version 5.00
+
+; =====================================================
+; accela:// URL scheme
+; =====================================================
+
+[HKEY_CLASSES_ROOT\accela]
+@="URL:ACCELA"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\accela\shell]
+
+[HKEY_CLASSES_ROOT\accela\shell\open]
+
+[HKEY_CLASSES_ROOT\accela\shell\open\command]
+@="\"[INSTALL_PATH]\" \"%1\""
+
+
+; =====================================================
+; Context menu: Open with ACCELA (ZIP files)
+; =====================================================
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.zip\shell\OpenWithACCELA]
+@="Open with ACCELA"
+"Icon"="[INSTALL_PATH]"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.zip\shell\OpenWithACCELA\command]
+@="\"[INSTALL_PATH]\" \"%1\""
