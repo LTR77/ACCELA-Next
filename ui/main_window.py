@@ -1,6 +1,7 @@
 import atexit
 import logging
 import os
+import random
 import sys
 from pathlib import Path
 from collections import deque
@@ -39,6 +40,7 @@ from ui.dialogs.lain import LainMinigameDialog
 from ui.dialogs.status import StatusDialog
 from ui.dialogs.credits import CreditsDialog
 from ui.dialogs.settings import SettingsDialog
+from ui.theme import ACCENT_COLOR_LIST
 from utils.logger import qt_log_handler
 from utils.settings import get_settings
 from utils.paths import Paths
@@ -60,7 +62,7 @@ class MainWindow(QMainWindow):
 
     def _setup_window_properties(self):
         """Configure basic window properties"""
-        self.setWindowTitle("ACCELA")
+        self.setWindowTitle("ACCELA Next")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setGeometry(100, 100, 800, 600)
 

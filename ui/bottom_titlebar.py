@@ -103,7 +103,7 @@ class BottomTitleBar(QFrame):
         version_label = ClickableLabel(app_version, parent, parent.open_credits_dialog)
         version_label.setStyleSheet("color: #888888;")
         version_label.setToolTip("View credits")
-        self.title_label = QLabel("ACCELA")
+        self.title_label = QLabel("ACCELA Next")
 
         left_layout.addWidget(version_label, alignment=Qt.AlignmentFlag.AlignLeft)
 

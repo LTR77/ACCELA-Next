@@ -1,13 +1,14 @@
 import multiprocessing
 import os
 import sys
+import random
 from urllib.parse import unquote
 
 if sys.platform == "win32":
     try:
         import ctypes
 
-        myappid = "god.is.in.the.wired.accela"
+        myappid = "re.accela.next"
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
@@ -18,6 +19,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QTimer
 from ui.main_window import MainWindow
 from ui.theme import update_appearance
+from ui.theme import ACCENT_COLOR_LIST
 
 from managers.cli_manager import run_cli_mode, open_cli_terminal
 
@@ -43,7 +45,7 @@ def main():
     from utils.version import app_version
 
     logger.info("========================================")
-    logger.info(f"ACCELA {app_version} starting...")
+    logger.info(f"{app_version} starting...")
     logger.info("========================================")
 
     # People only have substance within the memories of other people.
@@ -173,7 +175,8 @@ def main():
 
     # Load settings
     settings = get_settings()
-    accent_color = settings.value("accent_color", "#C06C84")
+    accent_color = settings.value("accent_color", random.choice(ACCENT_COLOR_LIST))
+    accent_color = random.choice(ACCENT_COLOR_LIST)
     bg_color = settings.value("background_color", "#000000")
 
     # Check for UI mode (e.g., Sonic) which may override colors/font
@@ -246,7 +249,7 @@ def main():
         sys.exit(app.exec())
     except Exception as e:
         logger.critical(
-            f"A critical error occurred, and the application must close. Error: {e}",
+            f"a error happened, and the application will close. Error: {e}",
             exc_info=True,
         )
         sys.exit(1)

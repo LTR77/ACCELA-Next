@@ -5,7 +5,9 @@ from PyQt6.QtGui import QColor, QFont, QFontDatabase, QPalette
 from utils.paths import Paths
 from pathlib import Path
 import logging
+import random
 
+ACCENT_COLOR_LIST = ["#C06C84", "#CE2029", "#035096", "#00FA9A", "#FF8C00"]
 
 def normal_palette_colors(background_color,accent_color): 
     return {
@@ -277,7 +279,7 @@ def apply_font(app, font, font_file):
     # Prefer returning the registered family name
     return True, families[0]
 
-def update_appearance(app, accent="#C06C84", background="#000000", font=None, font_file=None):
+def update_appearance(app, accent=random.choice(ACCENT_COLOR_LIST), background="#000000", font=None, font_file=None):
     """Apply a dynamic palette and custom font to the application
 
     font_file: relative resource path (eg. "res/sonic-1-hud-font.otf") to load

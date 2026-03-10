@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSettings
 
-APP_NAME = "ACCELA"
+APP_NAME = "ACCELA Next"
 ORG_NAME = "Tachibana Labs"
 
 
