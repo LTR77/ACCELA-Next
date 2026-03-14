@@ -81,9 +81,6 @@ class BottomTitleBar(QFrame):
         self.status_button = self._create_colored_circle_button("#FF0000", parent.open_status_dialog, "Download Status")
         right_layout.addWidget(self.status_button)
 
-        self.search_button = self._create_svg_button(SEARCH_SVG, parent.open_fetch_dialog, "Download Game")
-        right_layout.addWidget(self.search_button)
-
         self.game_library_button = self._create_svg_button(BOOK_SVG, parent.open_game_library, "Game Library")
         right_layout.addWidget(self.game_library_button)
 
@@ -188,7 +185,6 @@ class BottomTitleBar(QFrame):
         buttons = [
             self.minimize_button,
             self.maximize_button,
-            self.search_button,
             self.game_library_button,
             self.settings_button,
             self.close_button,
@@ -207,7 +203,6 @@ class BottomTitleBar(QFrame):
         buttons = [
             (self.minimize_button, MINIMIZE),
             (self.maximize_button, MAXIMIZE),
-            (self.search_button, SEARCH_SVG),
             (self.game_library_button, BOOK_SVG),
             (self.settings_button, GEAR_SVG),
             (self.close_button, POWER_SVG),

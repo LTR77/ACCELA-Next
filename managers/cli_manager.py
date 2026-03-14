@@ -18,7 +18,6 @@ from PyQt6.QtGui import QFont
 from core.steam_helpers import fix_greenluma_offline_mode, get_steam_libraries
 from core.tasks.process_zip_task import ProcessZipTask
 from core.tasks.download_depots_task import DownloadDepotsTask
-from core.morrenus_api import download_manifest as download_morrenus_manifest
 
 from utils.settings import get_settings
 from utils.task_runner import TaskRunner

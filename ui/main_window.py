@@ -33,7 +33,6 @@ from managers.task_manager import TaskManager
 from managers.ui_state_manager import UIStateManager
 from managers.gif_manager import GIFManager
 from ui.bottom_titlebar import BottomTitleBar
-from ui.dialogs.fetchmanifest import FetchManifestDialog
 from ui.dialogs.gamelibrary import GameLibraryDialog
 from ui.dialogs.settings import SettingsDialog
 from ui.dialogs.lain import LainMinigameDialog
@@ -521,11 +520,6 @@ class MainWindow(QMainWindow):
     def open_settings(self):
         dialog = SettingsDialog(self)
         dialog.exec()
-
-    def open_fetch_dialog(self):
-        self.ui_state.fetch_dialog = FetchManifestDialog(self)
-        self.ui_state.fetch_dialog.exec()
-        self.ui_state.fetch_dialog = None
 
     def open_game_library(self):
         """Open the Game Library dialog"""

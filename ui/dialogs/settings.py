@@ -29,7 +29,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from core import morrenus_api
 from ui.dialogs.custom_gifs import CustomGifsDialog
 from utils.helpers import (
     _get_slscheevo_path,
@@ -47,127 +46,6 @@ from utils.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
-
-class MorrenusStatsWidget(QWidget):
-    """Widget displaying Morrenus API user statistics"""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.settings = get_settings()
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 5, 0, 5)
-
-        row1 = QHBoxLayout()
-        row1.setSpacing(10)
-
-        self.username_label = QLabel("User: --")
-        self.username_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        row1.addWidget(self.username_label)
-
-        main_layout.addLayout(row1)
-
-        self.daily_usage_bar = QProgressBar()
-        self.daily_usage_bar.setRange(0, 100)
-        self.daily_usage_bar.setValue(0)
-        self.daily_usage_bar.setFormat("Daily: --")
-        self.daily_usage_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        accent_color = self.settings.value("accent_color", "#C06C84")
-        self.daily_usage_bar.setStyleSheet(f"""
-            QProgressBar {{
-                border: 1px solid #444;
-                border-radius: 0px;
-                text-align: center;
-                color: #fff;
-                background-color: #222;
-                height: 20px;
-            }}
-            QProgressBar::chunk {{
-                background-color: {accent_color};
-            }}
-        """)
-        main_layout.addWidget(self.daily_usage_bar)
-
-        row2 = QHBoxLayout()
-        row2.setSpacing(10)
-
-        self.expiration_label = QLabel("Expires: --")
-        self.expiration_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        row2.addWidget(self.expiration_label)
-
-        self.total_calls_label = QLabel("Total: --")
-        self.total_calls_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        row2.addWidget(self.total_calls_label)
-
-        self.status_label = QLabel("Status: --")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        row2.addWidget(self.status_label)
-
-        main_layout.addLayout(row2)
-
-        # Refresh button
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
-        )
-        self.refresh_button.clicked.connect(self.refresh_stats)
-        main_layout.addWidget(self.refresh_button)
-
-    def refresh_stats(self):
-        """Fetch and display latest stats from the API"""
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.setText("Loading...")
-
-        stats = morrenus_api.get_user_stats()
-
-        self.refresh_button.setEnabled(True)
-        self.refresh_button.setText("Refresh")
-
-        if stats.get("error"):
-            self.username_label.setText("User: Error")
-            self.total_calls_label.setText("Total: --")
-            self.daily_usage_bar.setFormat("Daily: Error")
-            self.daily_usage_bar.setValue(0)
-            self.expiration_label.setText("Expires: --")
-            self.status_label.setText("Status: Error")
-        else:
-            self.username_label.setText(f"User: {stats.get('username', 'Unknown')}")
-            self.total_calls_label.setText(
-                f"Total: {stats.get('api_key_usage_count', 0)}"
-            )
-
-            try:
-                daily_usage = int(stats.get("daily_usage", 0) or 0)
-            except (TypeError, ValueError):
-                daily_usage = 0
-
-            try:
-                daily_limit = int(stats.get("daily_limit", 100) or 100)
-            except (TypeError, ValueError):
-                daily_limit = 100
-            if daily_limit == 0:
-                daily_limit = 100
-
-            self.daily_usage_bar.setRange(0, daily_limit)
-            self.daily_usage_bar.setValue(daily_usage)
-            self.daily_usage_bar.setFormat(f"Daily: {daily_usage}/{daily_limit}")
-
-            expires_at = stats.get("api_key_expires_at", "")
-            if expires_at:
-                try:
-                    from datetime import datetime
-
-                    dt = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
-                    self.expiration_label.setText(f"Expires: {dt.strftime('%d/%m/%Y')}")
-                except ValueError:
-                    self.expiration_label.setText(f"Expires: {expires_at[:10]}")
-            else:
-                self.expiration_label.setText("Expires: Never")
-
-            status = "Active" if stats.get("can_make_requests", False) else "Blocked"
-            self.status_label.setText(f"Status: {status}")
-
-
 class SettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -181,8 +59,8 @@ class SettingsDialog(QDialog):
         self.accent_color = self.settings.value("accent_color", "#C06C84")
 
         # Save original API keys for restore on cancel
-        self._original_morrenus_key = self.settings.value("morrenus_api_key", "", type=str)
         self._original_sgdb_key = self.settings.value("sgdb_api_key", "", type=str)
+        self.sgdb_api_key_input = None
 
         self._user_accent_color = self.settings.value(
             "user_accent_color", 
@@ -220,7 +98,6 @@ class SettingsDialog(QDialog):
 
         # Create tabs
         self._create_downloads_tab()
-        self._create_morrenus_tab()
         self._create_steam_tab()
         self._create_tools_tab()
         self._create_audio_tab()
@@ -394,70 +271,6 @@ class SettingsDialog(QDialog):
         downloads_layout.addStretch()
         self.tab_widget.addTab(downloads_tab, "Downloads")
 
-    def _create_morrenus_tab(self):
-        """Create the Morrenus API settings tab"""
-        morrenus_tab = QWidget()
-        morrenus_layout = QVBoxLayout(morrenus_tab)
-        morrenus_layout.setContentsMargins(15, 15, 15, 15)
-
-        # --- API Keys Section ---
-        api_key_group = QGroupBox("API Keys")
-        api_key_layout = QVBoxLayout()
-        api_key_layout.setSpacing(10)
-
-        key_layout, self.api_key_input = self._create_api_key_setting(
-            "Morrenus API Key:",
-            "Paste your Morrenus API key",
-            "morrenus_api_key",
-            help_url="https://manifest.morrenus.xyz"
-        )
-        api_key_layout.addLayout(key_layout)
-
-        # SteamGridDB API key (Linux only)
-        if sys.platform == "linux":
-            sgdb_key_layout, self.sgdb_api_key_input = self._create_api_key_setting(
-                "SteamGridDB API Key:",
-                "Paste your SteamGridDB API key",
-                "sgdb_api_key",
-                help_url="https://www.steamgriddb.com/profile/account"
-            )
-            api_key_layout.addLayout(sgdb_key_layout)
-        else:
-            self.sgdb_api_key_input = None
-
-        api_key_group.setLayout(api_key_layout)
-        morrenus_layout.addWidget(api_key_group)
-
-        # --- Integration Stats Section ---
-        stats_group = QGroupBox("Morrenus Stats")
-        stats_group_layout = QVBoxLayout()
-        stats_group_layout.setContentsMargins(5, 10, 5, 10)
-
-        self.morrenus_stats_widget = MorrenusStatsWidget()
-        stats_group_layout.addWidget(self.morrenus_stats_widget)
-
-        stats_group.setLayout(stats_group_layout)
-        morrenus_layout.addWidget(stats_group)
-
-        morrenus_layout.addStretch()
-
-        # Load stats when tab is shown
-        from PyQt6.QtCore import QTimer
-
-        self.morrenus_tab_initialized = False
-
-        def on_tab_changed(index):
-            if (
-                self.tab_widget.tabText(index) == "Integrations"
-                and not self.morrenus_tab_initialized
-            ):
-                self.morrenus_tab_initialized = True
-                QTimer.singleShot(100, self.morrenus_stats_widget.refresh_stats)
-
-        self.tab_widget.currentChanged.connect(on_tab_changed)
-
-        self.tab_widget.addTab(morrenus_tab, "Integrations")
-
     def _create_steam_tab(self):
         """Create the Steam settings tab"""
         steam_tab = QWidget()
@@ -498,7 +311,7 @@ class SettingsDialog(QDialog):
             "sls_config_management",
             True,
             self,
-            f"Allow ACCELA to manage {wrapper_name} configuration files.",
+            f"Allow ACCELA Next to manage {wrapper_name} configuration files.",
         )
         steam_inner_layout.addWidget(self.sls_config_management_checkbox)
 
@@ -975,13 +788,6 @@ class SettingsDialog(QDialog):
     def accept(self):
         # --- General Settings ---
         # API Keys
-        api_key = self.api_key_input.text().strip()
-        self.settings.setValue("morrenus_api_key", api_key)
-        if api_key:
-            logger.info("Morrenus API key saved.")
-        else:
-            logger.info("Morrenus API key cleared.")
-
         if self.sgdb_api_key_input:
             sgdb_api_key = self.sgdb_api_key_input.text().strip()
             self.settings.setValue("sgdb_api_key", sgdb_api_key)
@@ -1162,7 +968,6 @@ class SettingsDialog(QDialog):
     def reject(self):
         """Restores original settings if cancelled"""
         # Restore API keys
-        self.settings.setValue("morrenus_api_key", self._original_morrenus_key)
         if self.sgdb_api_key_input is not None:
             self.settings.setValue("sgdb_api_key", self._original_sgdb_key)
 

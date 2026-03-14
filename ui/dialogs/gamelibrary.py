@@ -30,7 +30,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from core import morrenus_api
 from core.steam_helpers import slssteam_api_send
 from utils.helpers import get_base_path
 from utils.image_fetcher import ImageFetcher
